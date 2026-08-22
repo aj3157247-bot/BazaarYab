@@ -3,43 +3,26 @@ import os
 from kivy.app import App
 from kivy.core.text import LabelBase
 from kivy.metrics import dp, sp
-from kivy.graphics import Color, RoundedRectangle
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from kivy.uix.scrollview import ScrollView
-
-from rtl.rtl_engine import prepare_rtl
-
-
-# ============================================================
-# PATH
-# ============================================================
-
-BASE_DIR = os.path.dirname(
-    os.path.abspath(__file__)
-)
-
-FONT_PATH = os.path.join(
-    BASE_DIR,
-    "assets",
-    "Vazirmatn-Regular.ttf"
-)
+from kivy.graphics import Color, RoundedRectangle
 
 
 # ============================================================
 # FONT
 # ============================================================
 
-if not os.path.isfile(FONT_PATH):
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-    raise FileNotFoundError(
-        "Vazirmatn-Regular.ttf پیدا نشد:\n"
-        + FONT_PATH
-    )
-
+FONT_PATH = os.path.join(
+    BASE_DIR,
+    "assets",
+    "Vazirmatn-Regular.ttf"
+)
 
 LabelBase.register(
     name="PersianFont",
@@ -51,16 +34,9 @@ LabelBase.register(
 # PERSIAN LABEL
 # ============================================================
 
-class PersianLabel(Label):
+class PLabel(Label):
 
     def __init__(self, **kwargs):
-
-        text = kwargs.get(
-            "text",
-            ""
-        )
-
-        kwargs["text"] = prepare_rtl(text)
 
         kwargs["font_name"] = "PersianFont"
 
@@ -77,41 +53,24 @@ class PersianLabel(Label):
         super().__init__(**kwargs)
 
         self.bind(
-            size=self._update_text_size
+            size=self.update_text
         )
 
-    def _update_text_size(
-        self,
-        *args
-    ):
+    def update_text(self, *args):
 
         self.text_size = (
             self.width,
             None
         )
 
-    def set_text(
-        self,
-        text
-    ):
-
-        self.text = prepare_rtl(text)
-
 
 # ============================================================
 # PERSIAN BUTTON
 # ============================================================
 
-class PersianButton(Button):
+class PButton(Button):
 
     def __init__(self, **kwargs):
-
-        text = kwargs.get(
-            "text",
-            ""
-        )
-
-        kwargs["text"] = prepare_rtl(text)
 
         kwargs["font_name"] = "PersianFont"
 
@@ -123,26 +82,16 @@ class PersianButton(Button):
         super().__init__(**kwargs)
 
         self.bind(
-            size=self._update_text_size
+            size=self.update_text
         )
 
-    def _update_text_size(
-        self,
-        *args
-    ):
+    def update_text(self, *args):
 
         self.text_size = self.size
 
-    def set_text(
-        self,
-        text
-    ):
-
-        self.text = prepare_rtl(text)
-
 
 # ============================================================
-# MAIN APP
+# BAZAARYAR
 # ============================================================
 
 class BazaarYarApp(App):
@@ -153,129 +102,100 @@ class BazaarYarApp(App):
 
         self.menu_open = False
 
-        self.root_layout = FloatLayout()
-
+        root = FloatLayout()
 
         # ====================================================
-        # MAIN CONTENT
+        # MAIN
         # ====================================================
 
         main = BoxLayout(
             orientation="vertical",
             padding=dp(12),
-            spacing=dp(10),
-            size_hint=(1, 1)
+            spacing=dp(10)
         )
 
-
         # ====================================================
-        # TOP BAR
+        # HEADER
         # ====================================================
 
-        top = BoxLayout(
+        header = BoxLayout(
             orientation="horizontal",
             size_hint_y=None,
-            height=dp(60),
-            spacing=dp(8)
+            height=dp(60)
         )
 
-
-        menu_button = Button(
+        menu = Button(
             text="☰",
             font_name="PersianFont",
             font_size=sp(25),
             size_hint_x=None,
-            width=dp(58)
+            width=dp(60)
         )
 
-        menu_button.bind(
+        menu.bind(
             on_release=self.toggle_menu
         )
 
-
-        title = PersianLabel(
+        title = PLabel(
             text="بازاریار",
-            font_size=sp(28),
+            font_size=sp(27),
             bold=True,
             halign="center"
         )
 
+        header.add_widget(menu)
+        header.add_widget(title)
 
-        top.add_widget(
-            menu_button
-        )
-
-        top.add_widget(
-            title
-        )
-
-        main.add_widget(
-            top
-        )
-
+        main.add_widget(header)
 
         # ====================================================
         # SUBTITLE
         # ====================================================
 
-        subtitle = PersianLabel(
+        subtitle = PLabel(
             text="دستیار هوشمند بازار",
             font_size=sp(17),
             halign="center",
             size_hint_y=None,
-            height=dp(42)
+            height=dp(40)
         )
 
-        main.add_widget(
-            subtitle
-        )
-
+        main.add_widget(subtitle)
 
         # ====================================================
         # SEARCH TITLE
         # ====================================================
 
-        search_title = PersianLabel(
+        search_title = PLabel(
             text="چه چیزی می‌خواهید پیدا کنید؟",
             font_size=sp(18),
-            bold=True,
             size_hint_y=None,
             height=dp(45)
         )
 
-        main.add_widget(
-            search_title
-        )
-
+        main.add_widget(search_title)
 
         # ====================================================
         # SEARCH
         # ====================================================
 
-        search_box = BoxLayout(
+        search_row = BoxLayout(
             orientation="horizontal",
             spacing=dp(8),
             size_hint_y=None,
             height=dp(55)
         )
 
-
         self.search_input = TextInput(
             font_name="PersianFont",
             font_size=sp(16),
             multiline=False,
             halign="right",
-            padding=[
-                dp(12),
-                dp(12)
-            ],
-            hint_text=prepare_rtl(
-                "مثلاً موبایل، لباس، لپ‌تاپ..."
-            )
+            padding=dp(10),
+            hint_text="جستجو..."
         )
 
-
-        search_button = PersianButton(
+        search_button = PButton(
             text="جستجو",
             size_hint_x=None,
             width=dp(100)
@@ -285,134 +205,81 @@ class BazaarYarApp(App):
             on_release=self.search
         )
 
-
-        search_box.add_widget(
+        search_row.add_widget(
             self.search_input
         )
 
-        search_box.add_widget(
+        search_row.add_widget(
             search_button
         )
 
         main.add_widget(
-            search_box
+            search_row
         )
-
 
         # ====================================================
         # RESULT
         # ====================================================
 
-        self.result_label = PersianLabel(
-            text=(
-                "برای شروع، عبارت موردنظر "
-                "خود را جستجو کنید."
-            ),
+        self.result = PLabel(
+            text="برای شروع، چیزی را جستجو کنید.",
             font_size=sp(17),
-            valign="top",
-            size_hint_y=None
+            size_hint_y=None,
+            valign="top"
         )
-
-
-        self.result_label.bind(
-            texture_size=self.update_result_height
-        )
-
 
         scroll = ScrollView(
             do_scroll_x=False
         )
 
         scroll.add_widget(
-            self.result_label
+            self.result
         )
 
         main.add_widget(
             scroll
         )
 
-
         # ====================================================
         # BOTTOM
         # ====================================================
 
         bottom = BoxLayout(
-            orientation="horizontal",
             spacing=dp(6),
             size_hint_y=None,
-            height=dp(60)
+            height=dp(58)
         )
 
-
-        home = PersianButton(
-            text="خانه"
-        )
-
-        market = PersianButton(
-            text="بازار"
-        )
-
-        account = PersianButton(
-            text="حساب"
-        )
-
-
-        home.bind(
-            on_release=lambda x:
-            self.show_message(
-                "صفحه اصلی بازاریار"
-            )
-        )
-
-        market.bind(
-            on_release=lambda x:
-            self.show_message(
-                "بخش بازار"
-            )
-        )
-
-        account.bind(
-            on_release=lambda x:
-            self.show_message(
-                "حساب کاربری"
-            )
-        )
-
+        home = PButton(text="خانه")
+        market = PButton(text="بازار")
+        account = PButton(text="حساب")
 
         bottom.add_widget(home)
         bottom.add_widget(market)
         bottom.add_widget(account)
 
-        main.add_widget(
-            bottom
-        )
+        main.add_widget(bottom)
 
-
-        self.root_layout.add_widget(
-            main
-        )
-
+        root.add_widget(main)
 
         # ====================================================
         # SIDE MENU
         # ====================================================
 
-        self.create_side_menu()
+        self.create_menu(root)
 
-
-        return self.root_layout
-
+        return root
 
     # ========================================================
     # SIDE MENU
     # ========================================================
 
-    def create_side_menu(self):
+    def create_menu(self, root):
 
-        self.side_menu = BoxLayout(
+        self.side = BoxLayout(
             orientation="vertical",
-            spacing=dp(8),
             padding=dp(12),
+            spacing=dp(8),
             size_hint=(None, 1),
             width=dp(280),
             pos_hint={
@@ -421,8 +288,7 @@ class BazaarYarApp(App):
             }
         )
 
-
-        with self.side_menu.canvas.before:
+        with self.side.canvas.before:
 
             Color(
                 0.10,
@@ -431,24 +297,18 @@ class BazaarYarApp(App):
                 1
             )
 
-            self.side_background = RoundedRectangle(
-                pos=self.side_menu.pos,
-                size=self.side_menu.size,
+            self.bg = RoundedRectangle(
+                pos=self.side.pos,
+                size=self.side.size,
                 radius=[dp(12)]
             )
 
-
-        self.side_menu.bind(
-            pos=self.update_side_background,
-            size=self.update_side_background
+        self.side.bind(
+            pos=self.update_bg,
+            size=self.update_bg
         )
 
-
-        # ----------------------------------------------------
-        # TITLE
-        # ----------------------------------------------------
-
-        menu_title = PersianLabel(
+        title = PLabel(
             text="بازاریار",
             font_size=sp(25),
             bold=True,
@@ -457,227 +317,110 @@ class BazaarYarApp(App):
             height=dp(65)
         )
 
-        self.side_menu.add_widget(
-            menu_title
-        )
-
-
-        # ----------------------------------------------------
-        # ITEMS
-        # ----------------------------------------------------
+        self.side.add_widget(title)
 
         items = [
-
-            (
-                "خانه",
-                "صفحه اصلی بازاریار"
-            ),
-
-            (
-                "بازار",
-                "بخش بازار"
-            ),
-
-            (
-                "جستجوی محصولات",
-                "جستجوی محصولات"
-            ),
-
-            (
-                "علاقه‌مندی‌ها",
-                "علاقه‌مندی‌ها"
-            ),
-
-            (
-                "حساب کاربری",
-                "حساب کاربری"
-            ),
-
-            (
-                "تنظیمات",
-                "تنظیمات"
-            ),
-
-            (
-                "درباره بازاریار",
-                "درباره بازاریار\n\n"
-                "دستیار هوشمند بازار"
-            )
+            "خانه",
+            "بازار",
+            "جستجوی محصولات",
+            "علاقه‌مندی‌ها",
+            "حساب کاربری",
+            "تنظیمات",
+            "درباره بازاریار"
         ]
 
+        for item in items:
 
-        for title, message in items:
-
-            button = PersianButton(
-                text=title,
+            button = PButton(
+                text=item,
                 size_hint_y=None,
                 height=dp(52)
             )
 
             button.bind(
-                on_release=lambda instance,
-                msg=message:
-                self.show_message_and_close(
-                    msg
-                )
+                on_release=self.menu_click
             )
 
-            self.side_menu.add_widget(
-                button
-            )
+            self.side.add_widget(button)
 
-
-        # ----------------------------------------------------
-        # CLOSE
-        # ----------------------------------------------------
-
-        close_button = PersianButton(
+        close = PButton(
             text="بستن",
             size_hint_y=None,
             height=dp(52)
         )
 
-        close_button.bind(
+        close.bind(
             on_release=self.close_menu
         )
 
-        self.side_menu.add_widget(
-            close_button
-        )
+        self.side.add_widget(close)
 
-
-        self.root_layout.add_widget(
-            self.side_menu
-        )
-
+        root.add_widget(self.side)
 
     # ========================================================
     # MENU
     # ========================================================
 
-    def toggle_menu(
-        self,
-        *args
-    ):
+    def toggle_menu(self, *args):
 
         if self.menu_open:
-
             self.close_menu()
-
         else:
-
             self.open_menu()
-
 
     def open_menu(self):
 
         self.menu_open = True
 
-        self.side_menu.pos_hint = {
+        self.side.pos_hint = {
             "x": 0,
             "y": 0
         }
 
-
-    def close_menu(
-        self,
-        *args
-    ):
+    def close_menu(self, *args):
 
         self.menu_open = False
 
-        self.side_menu.pos_hint = {
+        self.side.pos_hint = {
             "x": -1,
             "y": 0
         }
 
+    def menu_click(self, instance):
+
+        self.result.text = instance.text
+
+        self.close_menu()
 
     # ========================================================
-    # MENU BACKGROUND
+    # BACKGROUND
     # ========================================================
 
-    def update_side_background(
-        self,
-        instance,
-        *args
-    ):
+    def update_bg(self, instance, *args):
 
-        self.side_background.pos = instance.pos
-
-        self.side_background.size = instance.size
-
+        self.bg.pos = instance.pos
+        self.bg.size = instance.size
 
     # ========================================================
     # SEARCH
     # ========================================================
 
-    def search(
-        self,
-        *args
-    ):
+    def search(self, *args):
 
-        query = self.search_input.text.strip()
+        text = self.search_input.text.strip()
 
+        if not text:
 
-        if not query:
-
-            self.result_label.set_text(
-                "لطفاً چیزی برای جستجو وارد کنید."
+            self.result.text = (
+                "لطفاً عبارت موردنظر را وارد کنید."
             )
 
-            return
+        else:
 
-
-        self.result_label.set_text(
-            "نتیجه جستجو\n\n"
-            "عبارت جستجو شده: "
-            + query
-            + "\n\n"
-            "بازاریار در حال آماده‌سازی "
-            "نتایج است..."
-        )
-
-
-    # ========================================================
-    # MESSAGE
-    # ========================================================
-
-    def show_message_and_close(
-        self,
-        message
-    ):
-
-        self.show_message(
-            message
-        )
-
-        self.close_menu()
-
-
-    def show_message(
-        self,
-        message
-    ):
-
-        self.result_label.set_text(
-            message
-        )
-
-
-    # ========================================================
-    # RESULT HEIGHT
-    # ========================================================
-
-    def update_result_height(
-        self,
-        instance,
-        texture_size
-    ):
-
-        instance.height = max(
-            texture_size[1] + dp(25),
-            dp(100)
-        )
+            self.result.text = (
+                "نتیجه جستجو\n\n"
+                + text
+            )
 
 
 # ============================================================
@@ -685,5 +428,4 @@ class BazaarYarApp(App):
 # ============================================================
 
 if __name__ == "__main__":
-
     BazaarYarApp().run()
