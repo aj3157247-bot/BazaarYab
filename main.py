@@ -13,7 +13,7 @@ from kivy.uix.scrollview import ScrollView
 
 
 # ============================================================
-# PATH
+# PROJECT PATH
 # ============================================================
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -26,7 +26,7 @@ FONT_PATH = os.path.join(
 
 
 # ============================================================
-# FONT
+# PERSIAN FONT
 # ============================================================
 
 if not os.path.isfile(FONT_PATH):
@@ -42,136 +42,206 @@ LabelBase.register(
 
 
 # ============================================================
-# PERSIAN SHAPING
-# بدون کتابخانه اضافی
+# PERSIAN LETTER SHAPING
 # ============================================================
 
-JOINING = {
-    "ا": ("ﺍ", "ﺎ"),
-    "آ": ("ﺁ", "ﺂ"),
+FORMS = {
+
+    "ا": ("ﺍ", "ﺎ", "ﺍ", "ﺎ"),
+    "آ": ("ﺁ", "ﺂ", "ﺁ", "ﺂ"),
+
     "ب": ("ﺏ", "ﺐ", "ﺑ", "ﺒ"),
     "پ": ("ﭖ", "ﭗ", "ﭙ", "ﭘ"),
     "ت": ("ﺕ", "ﺖ", "ﺗ", "ﺘ"),
     "ث": ("ﺙ", "ﺚ", "ﺛ", "ﺜ"),
+
     "ج": ("ﺝ", "ﺞ", "ﺟ", "ﺠ"),
     "چ": ("ﭺ", "ﭻ", "ﭼ", "ﭽ"),
+
     "ح": ("ﺡ", "ﺢ", "ﺣ", "ﺤ"),
     "خ": ("ﺥ", "ﺦ", "ﺧ", "ﺨ"),
-    "د": ("ﺩ", "ﺪ"),
-    "ذ": ("ﺫ", "ﺬ"),
-    "ر": ("ﺭ", "ﺮ"),
-    "ز": ("ﺯ", "ﺰ"),
-    "ژ": ("ﮊ", "ﮋ"),
+
+    "د": ("ﺩ", "ﺪ", "ﺩ", "ﺪ"),
+    "ذ": ("ﺫ", "ﺬ", "ﺫ", "ﺬ"),
+
+    "ر": ("ﺭ", "ﺮ", "ﺭ", "ﺮ"),
+    "ز": ("ﺯ", "ﺰ", "ﺯ", "ﺰ"),
+    "ژ": ("ﮊ", "ﮋ", "ﮊ", "ﮋ"),
+
     "س": ("ﺱ", "ﺲ", "ﺳ", "ﺴ"),
     "ش": ("ﺵ", "ﺶ", "ﺷ", "ﺸ"),
+
     "ص": ("ﺹ", "ﺺ", "ﺻ", "ﺼ"),
     "ض": ("ﺽ", "ﺾ", "ﺿ", "ﻀ"),
+
     "ط": ("ﻁ", "ﻂ", "ﻃ", "ﻄ"),
     "ظ": ("ﻅ", "ﻆ", "ﻇ", "ﻈ"),
+
     "ع": ("ﻉ", "ﻊ", "ﻋ", "ﻌ"),
     "غ": ("ﻍ", "ﻎ", "ﻏ", "ﻐ"),
+
     "ف": ("ﻑ", "ﻒ", "ﻓ", "ﻔ"),
     "ق": ("ﻕ", "ﻖ", "ﻗ", "ﻘ"),
+
     "ک": ("ﮎ", "ﮏ", "ﮐ", "ﮑ"),
     "گ": ("ﮒ", "ﮓ", "ﮔ", "ﮕ"),
+
     "ل": ("ﻝ", "ﻞ", "ﻟ", "ﻠ"),
     "م": ("ﻡ", "ﻢ", "ﻣ", "ﻤ"),
     "ن": ("ﻥ", "ﻦ", "ﻧ", "ﻨ"),
-    "و": ("ﻭ", "ﻮ"),
+
+    "و": ("ﻭ", "ﻮ", "ﻭ", "ﻮ"),
+
     "ه": ("ﻩ", "ﻪ", "ﻫ", "ﻬ"),
+
     "ی": ("ﻯ", "ﻰ", "ﻳ", "ﻴ"),
     "ي": ("ﻯ", "ﻰ", "ﻳ", "ﻴ"),
 }
 
-NON_JOINING = set([
-    "ا", "آ", "د", "ذ", "ر", "ز", "ژ", "و"
-])
+
+NON_CONNECTING = {
+    "ا",
+    "آ",
+    "د",
+    "ذ",
+    "ر",
+    "ز",
+    "ژ",
+    "و",
+}
 
 
-def is_persian_char(ch):
-    return ch in JOINING
+def is_persian_letter(char):
+
+    return char in FORMS
 
 
-def can_join_left(ch):
-    return is_persian_char(ch) and ch not in NON_JOINING
+def connects_to_previous(char):
+
+    return (
+        is_persian_letter(char)
+        and char not in NON_CONNECTING
+    )
 
 
-def can_join_right(ch):
-    return is_persian_char(ch)
+def connects_to_next(char):
+
+    return is_persian_letter(char)
 
 
-def shape_word(word):
-    result = []
+def shape_persian_word(word):
 
     chars = list(word)
 
-    for i, ch in enumerate(chars):
+    result = []
 
-        if ch not in JOINING:
-            result.append(ch)
+    for i, char in enumerate(chars):
+
+        if char not in FORMS:
+
+            result.append(char)
             continue
 
-        previous = chars[i - 1] if i > 0 else ""
-        next_char = chars[i + 1] if i + 1 < len(chars) else ""
+        previous = ""
+
+        next_char = ""
+
+        if i > 0:
+            previous = chars[i - 1]
+
+        if i < len(chars) - 1:
+            next_char = chars[i + 1]
 
         join_previous = (
-            can_join_left(previous)
-            and can_join_right(ch)
+            connects_to_previous(previous)
+            and connects_to_next(char)
         )
 
         join_next = (
-            can_join_left(ch)
-            and can_join_right(next_char)
+            connects_to_previous(char)
+            and connects_to_next(next_char)
         )
 
-        forms = JOINING[ch]
+        forms = FORMS[char]
 
-        if len(forms) == 2:
+        if join_previous and join_next:
 
-            if join_previous:
-                result.append(forms[1])
-            else:
-                result.append(forms[0])
+            result.append(forms[3])
+
+        elif join_previous:
+
+            result.append(forms[1])
+
+        elif join_next:
+
+            result.append(forms[2])
 
         else:
 
-            if join_previous and join_next:
-                result.append(forms[3])
-
-            elif join_previous:
-                result.append(forms[1])
-
-            elif join_next:
-                result.append(forms[2])
-
-            else:
-                result.append(forms[0])
+            result.append(forms[0])
 
     return "".join(result)
 
 
-def rtl(text):
-    """
-    تبدیل متن فارسی به شکل قابل نمایش
-    در Kivy بدون dependency اضافی.
-    """
+# ============================================================
+# RTL TEXT ENGINE
+# ============================================================
+
+def prepare_persian_text(text):
 
     if not text:
         return ""
 
-    words = text.split(" ")
+    # --------------------------------------------------------
+    # متن را خط به خط پردازش می‌کنیم
+    # --------------------------------------------------------
 
-    shaped_words = []
+    lines = text.split("\n")
 
-    for word in words:
-        shaped_words.append(
-            shape_word(word)
+    final_lines = []
+
+    for line in lines:
+
+        # اگر خط خالی است
+        if not line:
+
+            final_lines.append("")
+            continue
+
+        # ----------------------------------------------------
+        # فاصله‌ها را حفظ می‌کنیم
+        # ----------------------------------------------------
+
+        words = line.split(" ")
+
+        shaped_words = []
+
+        for word in words:
+
+            if word:
+
+                shaped_words.append(
+                    shape_persian_word(word)
+                )
+
+            else:
+
+                shaped_words.append("")
+
+        # ----------------------------------------------------
+        # نکته مهم:
+        #
+        # کلمات فارسی نباید با reversed(words)
+        # برگردانده شوند.
+        #
+        # ترتیب منطقی جمله حفظ می‌شود.
+        # ----------------------------------------------------
+
+        final_lines.append(
+            " ".join(shaped_words)
         )
 
-    # ترتیب راست به چپ برای نمایش Kivy
-    return " ".join(
-        reversed(shaped_words)
-    )
+    return "\n".join(final_lines)
 
 
 # ============================================================
@@ -182,9 +252,14 @@ class PersianLabel(Label):
 
     def __init__(self, **kwargs):
 
-        original = kwargs.get("text", "")
+        original_text = kwargs.get(
+            "text",
+            ""
+        )
 
-        kwargs["text"] = rtl(original)
+        kwargs["text"] = prepare_persian_text(
+            original_text
+        )
 
         kwargs["font_name"] = "PersianFont"
 
@@ -204,16 +279,24 @@ class PersianLabel(Label):
             size=self._update_text_size
         )
 
-    def _update_text_size(self, *args):
+    def _update_text_size(
+        self,
+        *args
+    ):
 
         self.text_size = (
             self.width,
             None
         )
 
-    def set_text(self, text):
+    def set_text(
+        self,
+        text
+    ):
 
-        self.text = rtl(text)
+        self.text = prepare_persian_text(
+            text
+        )
 
 
 # ============================================================
@@ -224,9 +307,14 @@ class PersianButton(Button):
 
     def __init__(self, **kwargs):
 
-        original = kwargs.get("text", "")
+        original_text = kwargs.get(
+            "text",
+            ""
+        )
 
-        kwargs["text"] = rtl(original)
+        kwargs["text"] = prepare_persian_text(
+            original_text
+        )
 
         kwargs["font_name"] = "PersianFont"
 
@@ -241,17 +329,25 @@ class PersianButton(Button):
             size=self._update_text_size
         )
 
-    def _update_text_size(self, *args):
+    def _update_text_size(
+        self,
+        *args
+    ):
 
         self.text_size = self.size
 
-    def set_text(self, text):
+    def set_text(
+        self,
+        text
+    ):
 
-        self.text = rtl(text)
+        self.text = prepare_persian_text(
+            text
+        )
 
 
 # ============================================================
-# APP
+# MAIN APP
 # ============================================================
 
 class BazaarYarApp(App):
@@ -262,14 +358,10 @@ class BazaarYarApp(App):
 
         self.menu_open = False
 
-        # ====================================================
-        # ROOT
-        # ====================================================
-
         self.root_layout = FloatLayout()
 
         # ====================================================
-        # MAIN PAGE
+        # MAIN CONTENT
         # ====================================================
 
         main = BoxLayout(
@@ -309,10 +401,17 @@ class BazaarYarApp(App):
             halign="center"
         )
 
-        top.add_widget(menu_button)
-        top.add_widget(title)
+        top.add_widget(
+            menu_button
+        )
 
-        main.add_widget(top)
+        top.add_widget(
+            title
+        )
+
+        main.add_widget(
+            top
+        )
 
         # ====================================================
         # SUBTITLE
@@ -326,7 +425,9 @@ class BazaarYarApp(App):
             height=dp(42)
         )
 
-        main.add_widget(subtitle)
+        main.add_widget(
+            subtitle
+        )
 
         # ====================================================
         # SEARCH TITLE
@@ -340,10 +441,12 @@ class BazaarYarApp(App):
             height=dp(45)
         )
 
-        main.add_widget(search_title)
+        main.add_widget(
+            search_title
+        )
 
         # ====================================================
-        # SEARCH
+        # SEARCH BOX
         # ====================================================
 
         search_box = BoxLayout(
@@ -362,7 +465,7 @@ class BazaarYarApp(App):
                 dp(12),
                 dp(12)
             ],
-            hint_text=rtl(
+            hint_text=prepare_persian_text(
                 "مثلاً موبایل، لباس، لپ‌تاپ..."
             )
         )
@@ -385,10 +488,12 @@ class BazaarYarApp(App):
             search_button
         )
 
-        main.add_widget(search_box)
+        main.add_widget(
+            search_box
+        )
 
         # ====================================================
-        # RESULTS
+        # RESULT AREA
         # ====================================================
 
         self.result_label = PersianLabel(
@@ -413,10 +518,12 @@ class BazaarYarApp(App):
             self.result_label
         )
 
-        main.add_widget(scroll)
+        main.add_widget(
+            scroll
+        )
 
         # ====================================================
-        # BOTTOM MENU
+        # BOTTOM NAVIGATION
         # ====================================================
 
         bottom = BoxLayout(
@@ -426,46 +533,58 @@ class BazaarYarApp(App):
             height=dp(60)
         )
 
-        home = PersianButton(
+        home_button = PersianButton(
             text="خانه"
         )
 
-        market = PersianButton(
+        market_button = PersianButton(
             text="بازار"
         )
 
-        account = PersianButton(
+        account_button = PersianButton(
             text="حساب"
         )
 
-        home.bind(
+        home_button.bind(
             on_release=lambda x:
             self.show_message(
                 "صفحه اصلی بازاریار"
             )
         )
 
-        market.bind(
+        market_button.bind(
             on_release=lambda x:
             self.show_message(
                 "بخش بازار"
             )
         )
 
-        account.bind(
+        account_button.bind(
             on_release=lambda x:
             self.show_message(
                 "حساب کاربری"
             )
         )
 
-        bottom.add_widget(home)
-        bottom.add_widget(market)
-        bottom.add_widget(account)
+        bottom.add_widget(
+            home_button
+        )
 
-        main.add_widget(bottom)
+        bottom.add_widget(
+            market_button
+        )
 
-        self.root_layout.add_widget(main)
+        bottom.add_widget(
+            account_button
+        )
+
+        main.add_widget(
+            bottom
+        )
+
+        self.root_layout.add_widget(
+            main
+        )
 
         # ====================================================
         # SIDE MENU
@@ -476,7 +595,7 @@ class BazaarYarApp(App):
         return self.root_layout
 
     # ========================================================
-    # SIDE MENU
+    # CREATE SIDE MENU
     # ========================================================
 
     def create_side_menu(self):
@@ -513,9 +632,9 @@ class BazaarYarApp(App):
             size=self.update_side_background
         )
 
-        # ====================================================
-        # MENU TITLE
-        # ====================================================
+        # ----------------------------------------------------
+        # TITLE
+        # ----------------------------------------------------
 
         menu_title = PersianLabel(
             text="بازاریار",
@@ -530,11 +649,11 @@ class BazaarYarApp(App):
             menu_title
         )
 
-        # ====================================================
-        # MENU ITEMS
-        # ====================================================
+        # ----------------------------------------------------
+        # ITEMS
+        # ----------------------------------------------------
 
-        buttons = [
+        items = [
 
             (
                 "خانه",
@@ -568,15 +687,15 @@ class BazaarYarApp(App):
 
             (
                 "درباره بازاریار",
-                "بازاریار\n\n"
+                "درباره بازاریار\n\n"
                 "دستیار هوشمند بازار"
             )
         ]
 
-        for title, message in buttons:
+        for title_text, message in items:
 
             button = PersianButton(
-                text=title,
+                text=title_text,
                 size_hint_y=None,
                 height=dp(52)
             )
@@ -584,16 +703,18 @@ class BazaarYarApp(App):
             button.bind(
                 on_release=lambda instance,
                 msg=message:
-                self.show_message_and_close(msg)
+                self.show_message_and_close(
+                    msg
+                )
             )
 
             self.side_menu.add_widget(
                 button
             )
 
-        # ====================================================
-        # CLOSE BUTTON
-        # ====================================================
+        # ----------------------------------------------------
+        # CLOSE
+        # ----------------------------------------------------
 
         close_button = PersianButton(
             text="بستن",
@@ -614,10 +735,13 @@ class BazaarYarApp(App):
         )
 
     # ========================================================
-    # MENU CONTROL
+    # MENU
     # ========================================================
 
-    def toggle_menu(self, *args):
+    def toggle_menu(
+        self,
+        *args
+    ):
 
         if self.menu_open:
 
@@ -636,7 +760,10 @@ class BazaarYarApp(App):
             "y": 0
         }
 
-    def close_menu(self, *args):
+    def close_menu(
+        self,
+        *args
+    ):
 
         self.menu_open = False
 
@@ -646,7 +773,7 @@ class BazaarYarApp(App):
         }
 
     # ========================================================
-    # MENU BACKGROUND
+    # SIDE MENU BACKGROUND
     # ========================================================
 
     def update_side_background(
@@ -663,7 +790,10 @@ class BazaarYarApp(App):
     # SEARCH
     # ========================================================
 
-    def search(self, *args):
+    def search(
+        self,
+        *args
+    ):
 
         query = self.search_input.text.strip()
 
@@ -693,11 +823,16 @@ class BazaarYarApp(App):
         message
     ):
 
-        self.show_message(message)
+        self.show_message(
+            message
+        )
 
         self.close_menu()
 
-    def show_message(self, message):
+    def show_message(
+        self,
+        message
+    ):
 
         self.result_label.set_text(
             message
@@ -720,7 +855,7 @@ class BazaarYarApp(App):
 
 
 # ============================================================
-# RUN
+# START
 # ============================================================
 
 if __name__ == "__main__":
